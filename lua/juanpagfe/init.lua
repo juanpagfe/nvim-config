@@ -1,0 +1,6 @@
+require("juanpagfe.set")
+require("juanpagfe.remap")
+require("juanpagfe.cmd")
+require("juanpagfe.config")
+require("juanpagfe.autoclose")
+require("juanpagfe.lazy_init")
