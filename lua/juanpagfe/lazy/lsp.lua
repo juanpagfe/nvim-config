@@ -22,7 +22,8 @@ return {
         local cmp_nvim_lsp = require("cmp_nvim_lsp")
         local capabilities = cmp_nvim_lsp.default_capabilities()
 
-        local servers = { "ts_ls", "html", "cssls", "jsonls", "clangd", "pyright", "eslint", "groovyls", "rust_analyzer" }
+        local servers = { "ts_ls", "html", "cssls", "jsonls", "clangd",
+            "pyright", "eslint", "groovyls", "rust_analyzer", "gopls" }
         for _, server in ipairs(servers) do
             if server == "groovyls" then
                 lspconfig[server].setup({
