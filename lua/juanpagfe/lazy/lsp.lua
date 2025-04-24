@@ -23,7 +23,7 @@ return {
         local capabilities = cmp_nvim_lsp.default_capabilities()
 
         local servers = { "ts_ls", "html", "cssls", "jsonls", "clangd",
-            "pyright", "eslint", "groovyls", "rust_analyzer", "gopls" }
+            "pyright", "eslint", "groovyls", "rust_analyzer", "gopls", "bashls" }
         for _, server in ipairs(servers) do
             if server == "groovyls" then
                 lspconfig[server].setup({
@@ -55,6 +55,7 @@ return {
             callback = function(ev)
                 local opts = { buffer = ev.buf }
                 local keymap = vim.keymap.set
+                keymap('n', '<space>e', vim.diagnostic.open_float)
                 keymap("n", "gD", vim.lsp.buf.declaration, opts)
                 keymap("n", "gd", vim.lsp.buf.definition, opts)
                 keymap("n", "K", vim.lsp.buf.hover, opts)
