@@ -35,6 +35,14 @@ return {
             end
         end
 
+        lspconfig.gopls.setup({
+            settings = {
+                gopls = {
+                    gofumpt = true,
+                },
+            },
+        })
+
         lspconfig.lua_ls.setup({
             settings = {
                 Lua = {
