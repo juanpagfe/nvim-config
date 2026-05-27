@@ -18,24 +18,20 @@ return {
         require("nvim-ts-autotag").setup()
         require("luasnip.loaders.from_vscode").lazy_load()
 
-        local lspconfig = require("lspconfig")
         local cmp_nvim_lsp = require("cmp_nvim_lsp")
         local capabilities = cmp_nvim_lsp.default_capabilities()
 
-        local servers = { "ts_ls", "html", "cssls", "jsonls", "clangd",
-            "pyright", "eslint", "groovyls", "rust_analyzer", "gopls", "bashls" }
-        for _, server in ipairs(servers) do
-            if server == "groovyls" then
-                lspconfig[server].setup({
-                    capabilities = capabilities,
-                    filetypes = { "groovy", "Jenkinsfile" }
-                })
-            else
-                lspconfig[server].setup({ capabilities = capabilities })
-            end
-        end
+        -- Set default capabilities for all LSP servers
+        vim.lsp.config("*", {
+            capabilities = capabilities,
+        })
 
-        lspconfig.gopls.setup({
+        -- Configure servers with custom settings
+        vim.lsp.config("groovyls", {
+            filetypes = { "groovy", "Jenkinsfile" },
+        })
+
+        vim.lsp.config("gopls", {
             settings = {
                 gopls = {
                     gofumpt = true,
@@ -43,7 +39,7 @@ return {
             },
         })
 
-        lspconfig.lua_ls.setup({
+        vim.lsp.config("lua_ls", {
             settings = {
                 Lua = {
                     diagnostics = { globals = { "vim" } },
@@ -54,10 +50,15 @@ return {
             }
         })
 
-        lspconfig.emmet_ls.setup({
-            capabilities = capabilities,
-            filetypes = { "html", "javascriptreact", "typescriptreact" }
+        vim.lsp.config("emmet_ls", {
+            filetypes = { "html", "javascriptreact", "typescriptreact" },
         })
+
+        -- Enable all servers (mason-lspconfig auto-enables Mason-installed ones,
+        -- but we explicitly enable all to cover non-Mason servers too)
+        vim.lsp.enable({ "ts_ls", "html", "cssls", "jsonls", "clangd",
+            "pyright", "eslint", "groovyls", "rust_analyzer", "gopls", "bashls",
+            "lua_ls", "emmet_ls", "solargraph" })
 
         vim.api.nvim_create_autocmd("LspAttach", {
             callback = function(ev)

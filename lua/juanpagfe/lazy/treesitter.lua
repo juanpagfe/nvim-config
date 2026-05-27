@@ -1,43 +1,59 @@
 return {
     {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
+    lazy = false,
     build = ":TSUpdate",
     config = function()
-        require("nvim-treesitter.configs").setup({
-            ensure_installed = {
-                "c", "lua", "vim", "vimdoc", "javascript", "typescript",
-                "python", "rust", "html", "go", "toml", "markdown", "json",
-                "yaml", "bash"},
+        local ts = require("nvim-treesitter")
 
-            sync_install = false,
-            auto_install = true,
-            indent = {
-                enable = true
-            },
-            highlight = {
-                enable = true,
-                disable = function(lang, buf)
-                    if lang == "html" then
-                        print("disabled")
-                        return true
-                    end
-                    local max_filesize = 100 * 1024 -- 100 KB
-                    local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
-                    if ok and stats and stats.size > max_filesize then
-                        vim.notify(
-                            "File larger than 100KB treesitter disabled for performance",
-                            vim.log.levels.WARN,
-                            {title = "Treesitter"}
-                        )
-                        return true
-                    end
-                end,
-                additional_vim_regex_highlighting = { "markdown" },
-            },
+        -- Install parsers (no-op if already installed)
+        ts.install({
+            "c", "lua", "vim", "vimdoc", "javascript", "typescript",
+            "python", "rust", "html", "go", "toml", "markdown", "json",
+            "yaml", "bash"})
+
+        -- Enable treesitter highlighting and indentation via FileType autocmd
+        vim.api.nvim_create_autocmd("FileType", {
+            callback = function(ev)
+                local buf = ev.buf
+                local lang = vim.treesitter.language.get_lang(ev.match) or ev.match
+
+                -- Skip highlighting for html
+                if lang == "html" then
+                    return
+                end
+
+                -- Skip large files for performance
+                local max_filesize = 100 * 1024 -- 100 KB
+                local ok, stats = pcall(vim.uv.fs_stat, vim.api.nvim_buf_get_name(buf))
+                if ok and stats and stats.size > max_filesize then
+                    vim.notify(
+                        "File larger than 100KB treesitter disabled for performance",
+                        vim.log.levels.WARN,
+                        {title = "Treesitter"}
+                    )
+                    return
+                end
+
+                -- Enable treesitter highlighting
+                pcall(vim.treesitter.start, buf, lang)
+
+                -- Enable treesitter-based indentation
+                vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+            end,
         })
 
-        local treesitter_parser_config = require("nvim-treesitter.parsers").get_parser_configs()
-        treesitter_parser_config.templ = {
+        -- Enable additional vim regex highlighting for markdown
+        vim.api.nvim_create_autocmd("FileType", {
+            pattern = { "markdown" },
+            callback = function()
+                vim.bo.syntax = "on"
+            end,
+        })
+
+        -- Register custom templ parser
+        require("nvim-treesitter.parsers").templ = {
             install_info = {
                 url = "https://github.com/vrischmann/tree-sitter-templ.git",
                 files = {"src/parser.c", "src/scanner.c"},
